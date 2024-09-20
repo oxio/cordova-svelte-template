@@ -1,0 +1,36 @@
+{
+  "name": "com.oxioapps.myapp",
+  "displayName": "MyApp",
+  "version": "1.0.0",
+  "description": "A sample Apache Cordova application with Svelte.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run switch-to-module && vite",
+    "build": "npm run switch-to-module && vite build",
+    "preview": "npm run switch-to-module && vite preview",
+    "switch-to-module": "jq '. + {type: \"module\"}' package.json > tmp_package.json && mv tmp_package.json package.json",
+    "switch-to-commonjs": "jq 'del(.type)' package.json > tmp_package.json && mv tmp_package.json package.json",
+    "cordova-browser": "npm run switch-to-module && vite build && npm run switch-to-commonjs && cordova run browser",
+    "cordova-android": "npm run switch-to-module && vite build && npm run switch-to-commonjs && cordova run android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "OxioApps",
+  "license": "MIT",
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0-next.7",
+    "cordova-android": "^13.0.0",
+    "cordova-browser": "^7.0.0",
+    "svelte": "^5.0.0-next.254",
+    "vite": "^5.4.6"
+  },
+  "cordova": {
+    "platforms": [
+      "android",
+      "browser"
+    ]
+  },
+  "type": "module"
+}
