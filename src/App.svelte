@@ -4,46 +4,35 @@
     import Home from './pages/landing/pages/Home.svelte';
     import Profile from './pages/landing/pages/Profile.svelte';
     import Dashboard from './pages/app/pages/Dashboard.svelte';
-    import Settings from './pages/app/pages/Settings.svelte';
+    import Route from "./lib/navigation.js";
+    import Settings from "./pages/app/pages/Settings.svelte"
 
-    // State variables
-    let currentLayout = LandingLayout;
-    let currentPage = 'home';
+    const router = {
+        home: new Route(Home, LandingLayout),
+        profile: new Route(Profile, LandingLayout),
+        appDashboard: new Route(Dashboard, AppLayout),
+        appSettings: new Route(Settings, AppLayout)
+    }
 
-    // Mapping of pages to content components
-    const pages = {
-        home: Home,
-        profile: Profile,
-        appDashboard: Dashboard,
-        appSettings: Settings
-    };
-
-    // Mapping of pages to layouts
-    const pageLayouts = {
-        home: LandingLayout,
-        profile: LandingLayout,
-        appDashboard: AppLayout,
-        appSettings: AppLayout
-    };
-
-    $: content = pages[currentPage];
+    let currentPage = $state('home');
+    const content = $derived(router[currentPage].page);
+    let Layout = $derived(router[currentPage].layout);
 
     function navigate(page) {
         currentPage = page;
-        currentLayout = pageLayouts[page] || LandingLayout;
     }
 </script>
 
 <!-- Navigation -->
 <nav>
-    <button on:click={() => navigate('home')}>Home</button>
-    <button on:click={() => navigate('profile')}>Profile</button>
-    <button on:click={() => navigate('appDashboard')}>App Dashboard</button>
-    <button on:click={() => navigate('appSettings')}>App Settings</button>
+    <button onclick={() => navigate('home')}>Home</button>
+    <button onclick={() => navigate('profile')}>Profile</button>
+    <button onclick={() => navigate('appDashboard')}>App Dashboard</button>
+    <button onclick={() => navigate('appSettings')}>App Settings</button>
 </nav>
 
 <!-- Render the current layout with the current content component -->
-<svelte:component this={currentLayout} {content} />
+<Layout {content} />
 
 <style>
     nav {
