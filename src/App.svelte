@@ -1,47 +1,33 @@
 <script>
-    import LandingLayout from './pages/landing/LandingLayout.svelte';
-    import AppLayout from './pages/app/AppLayout.svelte';
-    import Home from './pages/landing/pages/Home.svelte';
-    import Profile from './pages/landing/pages/Profile.svelte';
-    import Dashboard from './pages/app/pages/Dashboard.svelte';
-    import Route from "./lib/navigation.js";
-    import Settings from "./pages/app/pages/Settings.svelte"
+    import {windowRouter} from "./lib/navigation.ts";
+    import Dashboard from "./views/app/pages/Dashboard.svelte"
+    import Settings from "./views/app/pages/Settings.svelte"
+    import NotFound from "./views/NotFound.svelte"
+    import Home from "./views/landing/pages/Home.svelte"
+    import Profile from "./views/landing/pages/Profile.svelte"
 
-    const router = {
-        home: new Route(Home, LandingLayout),
-        profile: new Route(Profile, LandingLayout),
-        appDashboard: new Route(Dashboard, AppLayout),
-        appSettings: new Route(Settings, AppLayout)
-    }
+    const router = windowRouter()
+        .name('home')
+        .route('/', Home)
 
-    let currentPage = $state('home');
-    const content = $derived(router[currentPage].page);
-    let Layout = $derived(router[currentPage].layout);
+        .name('profile')
+        .route('/profile/{id}', Profile)
 
-    function navigate(page) {
-        currentPage = page;
-    }
+        .name('app-dashboard')
+        .route('/app/dashboard', Dashboard)
+
+        .name('app-settings')
+        .route('/app/settings', Settings)
+
+        .route('*', NotFound)
+
+    let currentPage = $state(router.current().target)
+    const View = $derived(currentPage)
+
+    router.registerPathChangeHandler(route => {
+        currentPage = route.target
+    })
+
 </script>
 
-<!-- Navigation -->
-<nav>
-    <button onclick={() => navigate('home')}>Home</button>
-    <button onclick={() => navigate('profile')}>Profile</button>
-    <button onclick={() => navigate('appDashboard')}>App Dashboard</button>
-    <button onclick={() => navigate('appSettings')}>App Settings</button>
-</nav>
-
-<!-- Render the current layout with the current content component -->
-<Layout {content} />
-
-<style>
-    nav {
-        background-color: #ddd;
-        padding: 1rem;
-        text-align: center;
-    }
-    button {
-        margin: 0 0.5rem;
-        padding: 0.5rem 1rem;
-    }
-</style>
+<View />
