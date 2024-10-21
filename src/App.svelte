@@ -21,11 +21,10 @@
 
         .route('*', NotFound)
 
-    let currentPage = $state(router.current().target)
-    const View = $derived(currentPage)
+    let View = $state(router.current().target)
 
     router.registerPathChangeHandler(route => {
-        currentPage = route.target
+        View = route.target
     })
 
 </script>
