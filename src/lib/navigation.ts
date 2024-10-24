@@ -1,147 +1,68 @@
-class Route<T> {
-    private readonly pathRegex: PathRegex
-
-    constructor(public readonly path: string, public readonly target: T) {
-        this.pathRegex = new PathRegex(path)
-    }
-
-    matches(path: string): boolean {
-        return this.pathRegex.test(path)
-    }
-}
-
-class PathRegex {
-    private _regex: RegExp
-
-    constructor(private readonly path: string) {}
-
-    public test(path: string): boolean {
-        return this.regex.test(path)
-    }
-
-    private get regex() {
-        if (!this._regex) {
-            // escape special characters
-            let path = this.path.replace(/[.+?^$()|[\]\\]/g, '\\$&')
-            // replace any asterisk with regular expression matching all characters .*
-            path = path.replace(/[*]/g, '.*')
-            // replace any variables within mustaches
-            path = path.replace(/{\s*[^}]+\s*}/g, '.*')
-            this._regex = new RegExp(`^${path}$`);
-        }
-        return this._regex
-    }
-}
+import {Route, Router} from "./router";
 
 type PathProvider = () => string
+type PathChangeHandler = (path: string) => void
+type Handler<T> = (route: Route<T>) => void
 
-class HashFragmentExtractor {
-    public extract(hash: string): string {
-        const hashIdx = hash.indexOf('#')
-        if (hashIdx === -1) {
-            return '/'
-        }
-        let fragment = hash.substring(hashIdx + 1)
-        fragment = this.clearSlashes(fragment)
-        if ('' === fragment) {
-            return '/'
-        }
-        return fragment
-    }
+class Navigator<T> {
 
-    private clearSlashes(fragment: string): string {
-        fragment = fragment.replace(/\\\/$/, '')
-        fragment = fragment.replace(/^\\\//, '')
-        return fragment
-    }
-}
-
-type NameAdder<T> = (name: string, path: string, target: any) => Router<T>
-
-class RouteAdder<T> {
     constructor(
-        private router: Router<T>,
-        private namedAdder: NameAdder<T>,
-        private name: string,
+        private readonly router: Router<T>,
+        private readonly handler: Handler<T>
     ) {
     }
 
-    public route(path: string, target: T): Router<any> {
-        this.namedAdder(this.name, path, target)
-        return this.router
+    public navigate(path: string) {
+        this.handler(this.router.match(path))
     }
 }
 
-class Router<T> {
-    private routes: Route<T>[] = []
-    private namedRoutes: { [key: string]: Route<T> } = {}
-    private _notFound: Route<T> | null
-    private pathChangeHandler: () => void = null
+class FrontController<T> {
 
     constructor(
-        private readonly eventTarget: EventTarget,
-        private readonly getPath: PathProvider,
+        private readonly navigator: Navigator<T>,
+        private readonly dispatcher: () => void,
     ) {
     }
 
-    public current(): Route<T> {
-        return this.match(this.getPath())
-    }
+    public dispatch(route: Route<T>) {
 
-    public match(path): Route<T>  {
-        const route = this.routes.find(route => route.matches(path))
-        if (route) {
-            return route
-        }
-        throw new Error(`No route matches path "${path}"`)
-    }
-
-    public name(name: string): RouteAdder<T> {
-        return new RouteAdder<T>(
-            this,
-            (name: string, path: string, target: T) => {
-                const route = new Route(path, target)
-                this.routes.push(route)
-                this.namedRoutes[name] = route
-                return this
-            },
-            name
-        )
-    }
-
-    public notFound(target: T): Router<T> {
-        this._notFound = new Route('', target)
-        return this
-    }
-
-    public route(path: string, target: T): Router<T> {
-        this.routes.push(new Route(path, target))
-        return this
-    }
-
-    public registerPathChangeHandler(cb): Router<T> {
-        this.unregisterListeners()
-        this.pathChangeHandler = () => {
-            cb(this.match(this.getPath()))
-        }
-        this.eventTarget.addEventListener('hashchange', this.pathChangeHandler)
-        return this
-    }
-
-    unregisterListeners() {
-        if (!this.pathChangeHandler) {
-            return
-        }
-        this.eventTarget.removeEventListener('hashchange', this.pathChangeHandler)
     }
 }
 
-const fragmentExtractor: HashFragmentExtractor = new HashFragmentExtractor()
-
-const getPathFromWindowHash: PathProvider = () => fragmentExtractor.extract(window.location.hash)
-
-function windowRouter() {
-    return new Router(window, getPathFromWindowHash)
+function makeWindowNavigator<T>(router: Router<T>, handler: Handler<T>): Navigator<T> {
+    const navigator = new Navigator(router, handler)
+    window.addEventListener('hashchange', () => navigator.navigate(router.getCurrentPath()))
+    return navigator
 }
 
-export { Route, Router, windowRouter, getPathFromWindowHash }
+
+
+// public registerPathChangeHandler(cb): Router<T> {
+//     this.unregisterListeners()
+//     this.pathChangeHandler = () => {
+//         cb(this.match(this.getCurrentPath()))
+//     }
+//     this.hashChangeEventTarget.addEventListener('hashchange', this.pathChangeHandler)
+//     return this
+// }
+//
+// private unregisterListeners() {
+//     if (!this.pathChangeHandler) {
+//         return
+//     }
+//     this.hashChangeEventTarget.removeEventListener('hashchange', this.pathChangeHandler)
+// }
+
+// const fragmentExtractor: HashFragmentExtractor = new HashFragmentExtractor()
+//
+// const getPathFromWindowHash: PathProvider = () => fragmentExtractor.extract(window.location.hash)
+//
+// function newWindowRouter() {
+//     return new Router(window, getPathFromWindowHash)
+// }
+
+export {
+    Navigator,
+    makeWindowNavigator,
+}
