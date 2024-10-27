@@ -1,3 +1,5 @@
+import {PathRegex} from "./uri";
+
 class Route<T> {
     private readonly pathRegex: PathRegex
 
@@ -51,16 +53,16 @@ class RouteBuilderItem<T> {
     constructor(
         private readonly builder: RouterBuilder<T>,
         private readonly routes: RoutesCollection<T>,
-        public route: Route<T> = undefined,
+        private routeObj: Route<T> = undefined,
     ) {
     }
 
     public route(path: string, target: T): RouteBuilderItem<T> {
-        if (this.route) {
+        if (this.routeObj) {
             return new RouteBuilderItem<T>(this.builder, this.routes).route(path, target)
         }
-        this.route = new Route(path, target);
-        this.routes.anon.push(this.route)
+        this.routeObj = new Route(path, target);
+        this.routes.anon.push(this.routeObj)
         return this
     }
 
@@ -68,7 +70,7 @@ class RouteBuilderItem<T> {
         if (!this.route) {
             throw new Error('Cannot call `name()` before `route()`')
         }
-        this.routes.named[name] = this.route
+        this.routes.named[name] = this.routeObj
         return this
     }
 

@@ -5,39 +5,21 @@
     import NotFound from "./views/NotFound.svelte"
     import Home from "./views/landing/pages/Home.svelte"
     import Profile from "./views/landing/pages/Profile.svelte"
-    import {makeWindowNavigator, Navigator} from "./lib/navigation.js"
+    import {BrowserWindowFrontController} from "./lib/navigation.ts"
+
+    let View = $state(Home)
 
     const router = new RouterBuilder()
-        .route('/', Home).name('home')
+        .route('/', Home)
         .route('/profile/{id}', Profile).name('profile')
-        .route('/app/dashboard', Dashboard).name('app-dashboard')
-        .route('/app/settings', Settings)
+        .route('/app/dashboard', Dashboard).name('app/dashboard')
+        .route('/app/settings', Settings).name('app/settings')
         .route('*', NotFound)
         .build()
 
-    let View = $state(router.match('/').target)
-
-    makeWindowNavigator(router, route => {
+    new BrowserWindowFrontController(router).setupDispatcher(route => {
         View = route.target
     })
-
-    // const nav = new Navigator(router, route => {
-    //     View = route.target
-    // })
-    // window.addEventListener('hashchange', () => {
-    //     nav.navigate(getPathFromHash())
-    // })
-
-    // const router = newWindowRouter()
-    //     .route('/', Home).name('home')
-    //     .route('/profile/{id}', Profile).name('profile')
-    //     .route('/app/dashboard', Dashboard).name('app-dashboard')
-    //     .route('/app/settings', Settings)
-    //     .route('*', NotFound)
-
-    // router.registerPathChangeHdler(route => {
-    //     View = route.target
-    // })
 
 </script>
 

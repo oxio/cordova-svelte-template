@@ -41,3 +41,8 @@ class HashFragmentExtractor {
         return fragment
     }
 }
+
+export {
+    PathRegex,
+    HashFragmentExtractor,
+}
