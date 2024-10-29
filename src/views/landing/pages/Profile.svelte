@@ -1,10 +1,8 @@
 <script>
-import LandingLayout from "../LandingLayout.svelte"
+export let userId = 999;
 </script>
 
-<LandingLayout>
-    <div slot="main">
-        <h2>User Profile</h2>
+
+        <h2>User {userId} Profile</h2>
         <p>Here is the user's profile information.</p>
-    </div>
-</LandingLayout>
+

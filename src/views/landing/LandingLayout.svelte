@@ -1,5 +1,7 @@
 <script lang="ts">
 import Navigation from "../shared/Navigation.svelte";
+export let Header, Content, Footer
+export let headerProps, contentProps, footerProps
 </script>
 
 <slot name="navigation">
@@ -8,21 +10,27 @@ import Navigation from "../shared/Navigation.svelte";
 
 <div class="landing-container">
     <header>
-        <slot name="header">
+        {#if Header}
+            <svelte:component this={Header} {...headerProps} />
+        {:else}
             <h1>Landing Layout v2</h1>
-        </slot>
+        {/if}
     </header>
 
     <main>
-        <slot name="main">
-            <p>Landing Main</p>
-        </slot>
+        {#if Content}
+            <svelte:component this={Content} {...contentProps} />
+        {:else}
+            <p>Landing Mainnn</p>
+        {/if}
     </main>
 
     <footer>
-        <slot name="footer">
+        {#if Footer}
+            <svelte:component this={Footer} {...footerProps} />
+        {:else}
             <p>Landing Footer</p>
-        </slot>
+        {/if}
     </footer>
 </div>
 
@@ -30,7 +38,7 @@ import Navigation from "../shared/Navigation.svelte";
     .landing-container {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        min-height: 80vh;
     }
     header, footer {
         background-color: #f0f0f0;

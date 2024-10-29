@@ -79,6 +79,28 @@ class RouteBuilderItem<T> {
     }
 }
 
+type Handler<T> = (...args: string[]) => T | void
+
+class NewRoute<T> {
+    private readonly params = new Map<string, string>()
+
+    public handler(handler: Handler<T>): Route<T> {
+        return new Route(this.path, handler)
+    }
+}
+
+class NewRouter<T> {
+    private readonly routes = new Map<string, Route<T>>()
+
+    public route(path: string, target: T);
+    public route(path: string, handler: Handler<T>);
+    public route(path: string, target: T): NewRouter<T> {
+        if (typeof target === '')
+        this.routes.set(path, new Route(path, target))
+        return this
+    }
+}
+
 class Router<T> {
     constructor(
         private readonly routes: RoutesCollection<T>
@@ -101,7 +123,7 @@ class Router<T> {
         return null
     }
 
-    public named(name: string): Route<T> {
+    public byName(name: string): Route<T> {
         return this.routes.getNamed(name)
     }
 }
